@@ -1,9 +1,8 @@
 import './App.css';
-import {Row, Col, Input, Divider, Modal, Progress} from "antd";
+import {Col, Divider, Modal, Progress, Row} from "antd";
 import {useEffect, useState} from "react";
-import {getInstance} from "d2";
 import HeaderBar from "@dhis2/d2-ui-header-bar"
-import {Button, Pane, Text, Select, SelectField, TextInputField} from "evergreen-ui";
+import {Button, Pane, SelectField, Text, TextInputField} from "evergreen-ui";
 
 function App(props) {
 
@@ -11,12 +10,14 @@ function App(props) {
   const [alertModal, setAlertModal] = useState(false);
   const [status, setStatus] = useState(0);
   const [statusText, setStatusText] = useState("normal");
-  const [messageText, setMessageText] = useState("Checking excel sheet.....");
+  const [messageText, setMessageText] = useState("Checking stratum...");
   const [orgUnits, setOrgUnits] = useState(props.orgUnits);
   const [selectedUnit, setSelectedUnit] = useState({});
   const [textValue, setTextValue] = useState(null);
+  const [auth, setAuth] = useState(props.auth);
 
   useEffect(() => {
+    setAuth(props.auth);
     setD2(props.d2);
     setOrgUnits(props.orgUnits);
 
@@ -27,13 +28,64 @@ function App(props) {
   };
 
   function handlePost(){
+    setAlertModal(true);
+    setStatusText("normal");
+
     if(selectedUnit === "All"){
       console.log("all stratums");
+      setStatus(10);
+      setMessageText("Processing of all stratums currently not available...");
+
+
     } else {
+
       var unit = orgUnits[orgUnits.findIndex(x => x.id === selectedUnit)];
+      setStatus(10);
+      setMessageText("Processing children of " + unit.displayName);
       console.log(unit);
       var children = unit.organisationUnits;
       console.log(children);
+
+      children.map((child) => {
+
+        setStatus(40);
+        const endpoint = `organisationUnits/${child.id}.json?fields=*`;
+        D2.Api.getApi().get(endpoint).then((response) => {
+          var payload = response;
+          var newName = payload.displayName + textValue;
+          payload.displayFormName = newName;
+          payload.displayName = newName;
+          payload.displayShortName = newName;
+          setStatus(60);
+
+          console.log(payload);
+          fetch(`https://covmw.com/namisdemo/api/organisationUnits/${child.id}`, {
+            method: 'PUT',
+            body: JSON.stringify(payload),
+            headers: {
+              'Authorization' : auth,
+              'Content-type': 'application/json',
+            },
+            credentials: "include"
+
+          }).then((response) => {
+
+            console.log(response);
+            if(response.status === 200 || response.status === 201){
+              setTimeout(() => {
+                setMessageText("Org Unit updated");
+                setStatusText("success");
+                setStatus(100);
+              }, 2000);
+
+            } else {
+              setMessageText("Unable to update org units due to an error");
+              setStatusText("exception");
+              setStatus(100);
+            }
+          })
+        });
+      });
     }
 
 
