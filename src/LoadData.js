@@ -17,8 +17,14 @@ const LoadData = (props) => {
             const orgEndpoint = "organisationUnitGroups.json?fields=id,displayName,organisationUnits&paging=false";
 
             d2.Api.getApi().get(orgEndpoint).then((response) => {
-                //console.log(response.userRoles);
-                setOrgUnits(response.organisationUnits);
+                console.log(response.organisationUnitGroups);
+                var tempArray = [{displayName : "All Stratums", id: "All"}];
+                response.organisationUnitGroups.map((item) => {
+                    if(item.displayName.includes("Stratum")){
+                        tempArray.push(item);
+                    }
+                })
+                setOrgUnits(tempArray);
             })
                 .catch((error) => {
                     console.log(error);

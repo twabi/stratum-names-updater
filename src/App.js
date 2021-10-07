@@ -3,20 +3,41 @@ import {Row, Col, Input, Divider, Modal, Progress} from "antd";
 import {useEffect, useState} from "react";
 import {getInstance} from "d2";
 import HeaderBar from "@dhis2/d2-ui-header-bar"
-import {Button, Pane, Text} from "evergreen-ui";
+import {Button, Pane, Text, Select, SelectField, TextInputField} from "evergreen-ui";
 
-function App() {
+function App(props) {
 
   const [D2, setD2] = useState();
   const [alertModal, setAlertModal] = useState(false);
   const [status, setStatus] = useState(0);
   const [statusText, setStatusText] = useState("normal");
   const [messageText, setMessageText] = useState("Checking excel sheet.....");
+  const [orgUnits, setOrgUnits] = useState(props.orgUnits);
+  const [selectedUnit, setSelectedUnit] = useState({});
+  const [textValue, setTextValue] = useState(null);
 
+  useEffect(() => {
+    setD2(props.d2);
+    setOrgUnits(props.orgUnits);
+
+  },[props]);
 
   const handleCancel = () => {
     setAlertModal(false);
   };
+
+  function handlePost(){
+    if(selectedUnit === "All"){
+      console.log("all stratums");
+    } else {
+      var unit = orgUnits[orgUnits.findIndex(x => x.id === selectedUnit)];
+      console.log(unit);
+      var children = unit.organisationUnits;
+      console.log(children);
+    }
+
+
+  }
 
   return (
       <div className="App">
@@ -57,32 +78,35 @@ function App() {
 
               <Divider className="mx-2" plain/>
 
-              <Row className="w-50 mt-3">
-                <Col span={12}>
-                  <Input
-                      type="file"
-                      style={{ width: "100%" }}
-                      accept=".xlsx, .xls, .csv"
-                      placeholder="select excel file"
-                      size="large"
-                      className="mt-2 w-100"
-                  />
+              <Row className="w-75 mt-3">
+                <Col span={12} className="p-3 text-left">
+                  <SelectField width="100%"
+                          label="Select organization Unit Group"
+                          description="Select the stratum whose children you wish to change"
+                          value={selectedUnit&&selectedUnit.displayName}
+                          onChange={e => setSelectedUnit(e.target.value)}>
+                    {orgUnits&&orgUnits.map((unit) => (
+                        <option value={unit.id} selected={selectedUnit&&selectedUnit.id === unit.id}>
+                          {unit.displayName}
+                        </option>
+                    ))}
+
+                  </SelectField>
                 </Col>
-                <Col span={12}>
-                  <Input
-                      type="file"
-                      style={{ width: "100%" }}
-                      accept=".xlsx, .xls, .csv"
-                      placeholder="select excel file"
-                      size="large"
-                      className="mt-2 w-100"
+                <Col span={12} className="p-3 text-left">
+                  <TextInputField
+                      label="Enter Additional text"
+                      description="Enter the additional text you want to add on the existing names"
+                      placeholder="enter text"
+                      value={textValue}
+                      onChange={e => setTextValue(e.target.value)}
                   />
                 </Col>
 
               </Row>
               <Row className="w-25 mt-4">
                 <Col span={24}>
-                  <Button appearance="primary">
+                  <Button appearance="primary" onClick={handlePost}>
                     POST
                   </Button>
                 </Col>
