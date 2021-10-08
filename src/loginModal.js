@@ -1,13 +1,16 @@
 import React from "react";
 import {Form, Input, Button, Modal} from 'antd';
 import {withBaseUrl} from "./index";
+import {Text} from "evergreen-ui";
 
 var url = "https://covmw.com/namisdemo/"
 
 const LoginModal = () => {
     const [visible, setVisible] = React.useState(true);
+    const [message, setMessage] = React.useState("");
 
     const onFinish = (values) => {
+        setMessage("");
         //console.log('Success:', values);
 
         var username = values.username;
@@ -28,6 +31,8 @@ const LoginModal = () => {
             console.log(response);
             if(response.status === 200){
                 withBaseUrl(url+"api", basicAuth);
+            } else if(response.status === 401){
+                setMessage("Incorrect login credentials. Try again")
             }
         }).catch((error) =>{
             console.log(error);
@@ -67,11 +72,13 @@ const LoginModal = () => {
                                 <Input.Password id="password"/>
                             </Form.Item>
 
-                            <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+                            <Form.Item wrapperCol={{ offset: 8, span: 16 }} className="d-flex flex-column">
                                 <Button type="primary" htmlType="submit">
                                     Submit
                                 </Button>
+
                             </Form.Item>
+                            <Text className="text-danger text-center">{message}</Text>
                         </Form>
                     </>
 
