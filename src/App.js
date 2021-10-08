@@ -12,7 +12,7 @@ function App(props) {
   const [statusText, setStatusText] = useState("normal");
   const [messageText, setMessageText] = useState("Checking stratum...");
   const [orgUnits, setOrgUnits] = useState(props.orgUnits);
-  const [selectedUnit, setSelectedUnit] = useState({});
+  const [selectedUnit, setSelectedUnit] = useState(null);
   const [textValue, setTextValue] = useState(null);
   const [auth, setAuth] = useState(props.auth);
 
@@ -27,15 +27,21 @@ function App(props) {
     setAlertModal(false);
   };
 
-  function handlePost(){
+  function handlePost() {
     setAlertModal(true);
     setStatusText("normal");
 
-    if(selectedUnit === "All"){
+    console.log(selectedUnit)
+    if(selectedUnit == null || textValue == null){
+      setMessageText("Fields cannot be left empty");
+      setStatusText("exception");
+      setStatus(100);
+    }
+    else if(selectedUnit === "All" ){
       console.log("all stratums");
-      setStatus(10);
       setMessageText("Processing of all stratums currently not available...");
-
+      setStatusText("exception");
+      setStatus(100);
 
     } else {
 
