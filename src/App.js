@@ -58,10 +58,33 @@ function App(props) {
           payload.displayShortName = newName;
           setStatus(60);
 
-          console.log(payload);
-          fetch(`https://covmw.com/namisdemo/api/organisationUnits/${child.id}`, {
-            method: 'PUT',
-            body: JSON.stringify(payload),
+          var putPayload = {
+            "path": payload.path,
+            "lastUpdated": payload.lastUpdated,
+            "id": payload.id,
+            "level": payload.level,
+            "created": payload.created,
+            "attributeValues": payload.attributeValues,
+            "name": newName,
+            "shortName": newName,
+            "openingDate": payload.openingDate,
+            "parent":{
+              "id": payload.parent.id
+            },
+            "lastUpdatedBy":{
+              "id": payload.lastUpdatedBy.id
+            },
+            "createdBy":{
+              "id": payload.createdBy.id
+            },
+            "translations": payload.translations
+          }
+
+          console.log(putPayload);
+
+          fetch(`https://covmw.com/namisdemo/api/29/schemas/organisationUnit`, {
+            method: 'POST',
+            body: JSON.stringify(putPayload),
             headers: {
               'Authorization' : auth,
               'Content-type': 'application/json',
@@ -69,21 +92,36 @@ function App(props) {
             credentials: "include"
 
           }).then((response) => {
-
-            console.log(response);
             if(response.status === 200 || response.status === 201){
-              setTimeout(() => {
-                setMessageText("Org Unit updated");
-                setStatusText("success");
-                setStatus(100);
-              }, 2000);
+              setStatus(80);
+              fetch(`https://covmw.com/namisdemo/api/organisationUnits/${child.id}?mergeMode=REPLACE`, {
+                method: 'PUT',
+                body: JSON.stringify(putPayload),
+                headers: {
+                  'Authorization' : auth,
+                  'Content-type': 'application/json',
+                },
+                credentials: "include"
 
-            } else {
-              setMessageText("Unable to update org units due to an error");
-              setStatusText("exception");
-              setStatus(100);
+              }).then((response) => {
+
+                console.log(response);
+                if(response.status === 200 || response.status === 201){
+                  setTimeout(() => {
+                    setMessageText("Org Unit updated");
+                    setStatusText("success");
+                    setStatus(100);
+                  }, 2000);
+
+                } else {
+                  setMessageText("Unable to update org units due to an error");
+                  setStatusText("exception");
+                  setStatus(100);
+                }
+              })
             }
-          })
+          });
+
         });
       });
     }
